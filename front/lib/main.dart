@@ -437,7 +437,7 @@ class _HomePageState extends State<HomePage> {
                                   width: 20,
                                   height: 20,
                                   colorFilter: const ColorFilter.mode(
-                                    Colors.white,
+                                    Color(0xFFE4E4E4),
                                     BlendMode.srcIn,
                                   ),
                                 ),
@@ -448,7 +448,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(
                                       'Connect',
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: Color(0xFFE4E4E4),
                                         fontSize: 15,
                                       ),
                                     ),
@@ -466,7 +466,7 @@ class _HomePageState extends State<HomePage> {
                                   width: 20,
                                   height: 20,
                                   colorFilter: const ColorFilter.mode(
-                                    Colors.white,
+                                    Color(0xFFE4E4E4),
                                     BlendMode.srcIn,
                                   ),
                                 ),
@@ -477,7 +477,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(
                                       'Create',
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: Color(0xFFE4E4E4),
                                         fontSize: 15,
                                       ),
                                     ),
@@ -495,7 +495,7 @@ class _HomePageState extends State<HomePage> {
                                   width: 20,
                                   height: 20,
                                   colorFilter: const ColorFilter.mode(
-                                    Colors.white,
+                                    Color(0xFFE4E4E4),
                                     BlendMode.srcIn,
                                   ),
                                 ),
@@ -506,7 +506,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(
                                       'Import',
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: Color(0xFFE4E4E4),
                                         fontSize: 15,
                                       ),
                                     ),
@@ -549,7 +549,7 @@ class _HomePageState extends State<HomePage> {
                                     focusNode: _focusNode,
                                     enabled: true,
                                     readOnly: false,
-                                    cursorColor: Colors.white,
+                                    cursorColor: const Color(0xFFE4E4E4),
                                     cursorHeight: 15,
                                     maxLines: 11,
                                     minLines: 1,
@@ -559,7 +559,7 @@ class _HomePageState extends State<HomePage> {
                                         fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                         height: 2.0,
-                                        color: Colors.white),
+                                        color: Color(0xFFE4E4E4)),
                                     onSubmitted: (value) {
                                       print(
                                           'TextField onSubmitted called with: "$value"'); // Debug
@@ -575,7 +575,7 @@ class _HomePageState extends State<HomePage> {
                                           ? null
                                           : 'Ask anything',
                                       hintStyle: const TextStyle(
-                                          color: Colors.white,
+                                          color: Color(0xFFE4E4E4),
                                           fontFamily: 'Aeroport',
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
@@ -602,7 +602,7 @@ class _HomePageState extends State<HomePage> {
                                     focusNode: _focusNode,
                                     enabled: true,
                                     readOnly: false,
-                                    cursorColor: Colors.white,
+                                    cursorColor: const Color(0xFFE4E4E4),
                                     cursorHeight: 15,
                                     maxLines: 11,
                                     minLines: 1,
@@ -615,7 +615,7 @@ class _HomePageState extends State<HomePage> {
                                         fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                         height: 2,
-                                        color: Colors.white),
+                                        color: Color(0xFFE4E4E4)),
                                     onSubmitted: (value) {
                                       print(
                                           'TextField onSubmitted called with: "$value"'); // Debug
@@ -631,7 +631,7 @@ class _HomePageState extends State<HomePage> {
                                           ? null
                                           : 'Ask anything',
                                       hintStyle: const TextStyle(
-                                          color: Colors.white,
+                                          color: Color(0xFFE4E4E4),
                                           fontFamily: 'Aeroport',
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
@@ -1132,7 +1132,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                           fontFamily: 'Aeroport',
                                           fontSize: 20,
                                           fontWeight: FontWeight.w400,
-                                          color: Colors.white,
+                                          color: Color(0xFFE4E4E4),
                                         ),
                                         textAlign: TextAlign.left,
                                       ),
@@ -1159,7 +1159,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                                 fontFamily: 'Aeroport',
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w400,
-                                                color: Colors.white,
+                                                color: Color(0xFFE4E4E4),
                                               ),
                                               textAlign: TextAlign.left,
                                             );
@@ -1183,7 +1183,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                             fontFamily: 'Aeroport',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w400,
-                                            color: Colors.white,
+                                            color: Color(0xFFE4E4E4),
                                           ),
                                           textAlign: TextAlign.left,
                                         )
@@ -1194,7 +1194,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                             fontFamily: 'Aeroport',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w400,
-                                            color: Colors.white,
+                                            color: Color(0xFFE4E4E4),
                                           ),
                                         ),
                                       // Add spacing between Q&A pairs (except for the last one in reversed list)
@@ -1247,7 +1247,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                       width: 1.0,
                                       height: indicatorHeight.clamp(
                                           0.0, containerHeight),
-                                      color: Colors.white,
+                                      color: const Color(0xFFE4E4E4),
                                     ),
                                   ),
                                 );
@@ -1280,7 +1280,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                       key: _inputTextFieldKey,
                                       controller: _inputController,
                                       focusNode: _inputFocusNode,
-                                      cursorColor: Colors.white,
+                                      cursorColor: const Color(0xFFE4E4E4),
                                       cursorHeight: 15,
                                       maxLines: 11,
                                       minLines: 1,
@@ -1291,7 +1291,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
                                           height: 2.0,
-                                          color: Colors.white),
+                                          color: Color(0xFFE4E4E4)),
                                       onSubmitted: (value) {
                                         _askNewQuestion();
                                       },
@@ -1302,7 +1302,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                             ? null
                                             : 'Ask anything',
                                         hintStyle: const TextStyle(
-                                            color: Colors.white,
+                                            color: Color(0xFFE4E4E4),
                                             fontFamily: 'Aeroport',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w500,
@@ -1327,7 +1327,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                       key: _inputTextFieldKey,
                                       controller: _inputController,
                                       focusNode: _inputFocusNode,
-                                      cursorColor: Colors.white,
+                                      cursorColor: const Color(0xFFE4E4E4),
                                       cursorHeight: 15,
                                       maxLines: 11,
                                       minLines: 1,
@@ -1342,7 +1342,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
                                           height: 2,
-                                          color: Colors.white),
+                                          color: Color(0xFFE4E4E4)),
                                       onSubmitted: (value) {
                                         _askNewQuestion();
                                       },
@@ -1353,7 +1353,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                             ? null
                                             : 'Ask anything',
                                         hintStyle: const TextStyle(
-                                            color: Colors.white,
+                                            color: Color(0xFFE4E4E4),
                                             fontFamily: 'Aeroport',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w500,
@@ -1383,6 +1383,10 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                             'assets/icons/apply.svg',
                             width: 30,
                             height: 30,
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFFE4E4E4),
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ],
