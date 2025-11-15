@@ -337,7 +337,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.symmetric(
                             vertical: 10, horizontal: 20),
                         child: SvgPicture.asset(
-                          '/icons/rotate.svg',
+                          'assets/icons/rotate.svg',
                           width: 30,
                           height: 30,
                         ),
