@@ -1,5 +1,4 @@
-prompt's suggestions
-user's db
+AI bot, AI envs
 chart
 
 failed to connect

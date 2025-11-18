@@ -1,10 +1,12 @@
 import os
 import asyncio
+import json
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-from telegram.error import Conflict
+from telegram.error import Conflict, TelegramError
 import asyncpg
+import httpx
 from datetime import datetime, timezone
 
 load_dotenv()
@@ -121,8 +123,121 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        f"Hello, {update.effective_user.first_name}. I'm xp7k, proceed to the app",
+        f"Hello, {update.effective_user.first_name}. I'm xp7k, proceed to the app or ask me everything",
         reply_markup=reply_markup
+    )
+
+
+async def stream_ai_response(message_text: str, bot, chat_id: int, message_id: int):
+    """Stream AI response and edit message as chunks arrive"""
+    ai_backend_url = os.getenv('AI_BACKEND_URL', 'https://xp7k-production.up.railway.app')
+    accumulated_text = ""
+    last_edit_time = asyncio.get_event_loop().time()
+    edit_interval = 1.0  # Edit message every 1 second to avoid rate limits
+    
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            async with client.stream(
+                "POST",
+                f"{ai_backend_url}/api/chat",
+                json={"message": message_text},
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                response.raise_for_status()
+                
+                async for line in response.aiter_lines():
+                    if line:
+                        try:
+                            data = json.loads(line)
+                            if "error" in data:
+                                await bot.edit_message_text(
+                                    chat_id=chat_id,
+                                    message_id=message_id,
+                                    text=f"Error: {data['error']}"
+                                )
+                                return
+                            
+                            if "token" in data:
+                                accumulated_text += data["token"]
+                            elif "response" in data:
+                                accumulated_text = data["response"]
+                            
+                            # Edit message periodically to avoid rate limits
+                            current_time = asyncio.get_event_loop().time()
+                            if current_time - last_edit_time >= edit_interval:
+                                # Telegram message limit is 4096 characters
+                                display_text = accumulated_text[:4090] + "..." if len(accumulated_text) > 4090 else accumulated_text
+                                if display_text:  # Only edit if we have text
+                                    try:
+                                        await bot.edit_message_text(
+                                            chat_id=chat_id,
+                                            message_id=message_id,
+                                            text=display_text
+                                        )
+                                        last_edit_time = current_time
+                                    except TelegramError as e:
+                                        # If editing fails (e.g., message too long or same content), continue
+                                        print(f"Warning: Could not edit message: {e}")
+                            
+                            if data.get("done", False):
+                                break
+                        except json.JSONDecodeError:
+                            continue
+                
+                # Final edit with complete response
+                final_text = accumulated_text[:4096] if len(accumulated_text) <= 4096 else accumulated_text[:4090] + "..."
+                if final_text:
+                    await bot.edit_message_text(
+                        chat_id=chat_id,
+                        message_id=message_id,
+                        text=final_text
+                    )
+                else:
+                    await bot.edit_message_text(
+                        chat_id=chat_id,
+                        message_id=message_id,
+                        text="Sorry, I didn't receive a response."
+                    )
+    except httpx.TimeoutException:
+        await bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=message_id,
+            text="Sorry, the AI took too long to respond. Please try again."
+        )
+    except httpx.RequestError as e:
+        await bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=f"Sorry, I couldn't connect to the AI service. Error: {str(e)}"
+        )
+    except Exception as e:
+        await bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=f"Sorry, an error occurred: {str(e)}"
+        )
+
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle arbitrary text messages with AI responses"""
+    if not update.message or not update.message.text:
+        return
+    
+    message_text = update.message.text.strip()
+    
+    # Skip if message is empty or is a command
+    if not message_text or message_text.startswith('/'):
+        return
+    
+    # Send initial "thinking" message
+    sent_message = await update.message.reply_text("Thinking...")
+    
+    # Stream AI response and edit the message as chunks arrive
+    await stream_ai_response(
+        message_text,
+        context.bot,
+        sent_message.chat_id,
+        sent_message.message_id
     )
 
 
@@ -167,6 +282,10 @@ def main():
     
     # Add command handlers
     app.add_handler(CommandHandler("start", hello))
+    
+    # Add handler for arbitrary text messages (AI responses)
+    # This should run after command handlers, so commands are processed first
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("Bot starting...")
     try:
