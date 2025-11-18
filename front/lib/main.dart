@@ -5,6 +5,10 @@ import 'dart:convert';
 import 'analytics.dart';
 
 class DiagonalLinePainter extends CustomPainter {
+  final List<double>? dataPoints; // Optional: for real data later
+
+  DiagonalLinePainter({this.dataPoints});
+
   @override
   void paint(Canvas canvas, Size size) {
     if (size.width == 0 || size.height == 0) return;
@@ -12,18 +16,67 @@ class DiagonalLinePainter extends CustomPainter {
     final paint = Paint()
       ..color = const Color(0xFFE4E4E4)
       ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
 
-    // Draw line from bottom-left to top-right
-    canvas.drawLine(
-      Offset(0, size.height), // Bottom-left
-      Offset(size.width, 0), // Top-right
-      paint,
-    );
+    final path = Path();
+
+    // Use real data if provided, otherwise use sample points
+    final points = dataPoints ?? _getSamplePoints(size);
+
+    if (points.isEmpty) return;
+
+    // Start the path
+    path.moveTo(0, size.height - (points[0] * size.height));
+
+    // Create smooth curve through all points using cubic bezier
+    for (int i = 1; i < points.length; i++) {
+      final x = (i / (points.length - 1)) * size.width;
+      final y = size.height - (points[i] * size.height);
+
+      if (i == 1) {
+        // First segment: use quadratic curve
+        final controlX = x * 0.5;
+        final controlY = size.height -
+            (points[0] * size.height) * 0.7 -
+            (points[i] * size.height) * 0.3;
+        path.quadraticBezierTo(controlX, controlY, x, y);
+      } else {
+        // Subsequent segments: use cubic bezier for smooth transitions
+        final prevX = ((i - 1) / (points.length - 1)) * size.width;
+        final prevY = size.height - (points[i - 1] * size.height);
+
+        // Control points for smooth curve
+        final cp1X = prevX + (x - prevX) * 0.3;
+        final cp1Y = prevY;
+        final cp2X = prevX + (x - prevX) * 0.7;
+        final cp2Y = y;
+
+        path.cubicTo(cp1X, cp1Y, cp2X, cp2Y, x, y);
+      }
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  // Sample data points for demonstration (normalized 0.0 to 1.0)
+  List<double> _getSamplePoints(Size size) {
+    return [
+      0.1, // Start low
+      0.6, // First peak
+      0.3, // First valley
+      0.2, // Deep dip
+      0.7, // Second peak
+      0.5, // Descent
+      0.9, // Final ascent
+    ];
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(DiagonalLinePainter oldDelegate) {
+    return oldDelegate.dataPoints != dataPoints;
+  }
 }
 
 void main() {
