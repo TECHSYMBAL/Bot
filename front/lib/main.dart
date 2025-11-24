@@ -276,6 +276,17 @@ class _HomePageState extends State<HomePage> {
   String? _usdtTokenAddress; // Will be fetched from API if needed
   String? _swapAmountError; // Error message if fetch fails
 
+  // Market stats state variables
+  static const String _tokensApiUrl = 'https://tokens.swap.coffee';
+  double? _mcap;
+  double? _fdmc;
+  double? _volume24h;
+  double? _priceChange5m;
+  double? _priceChange1h;
+  double? _priceChange6h;
+  double? _priceChange24h;
+  bool _isLoadingMarketStats = false;
+
   // Resolution mapping: button -> API value
   static const Map<String, String> _resolutionMap = {
     'd': 'day1',
@@ -457,6 +468,8 @@ class _HomePageState extends State<HomePage> {
     _fetchChartData();
     // Fetch swap amount on page load
     _fetchSwapAmount();
+    // Fetch market stats on page load
+    _fetchMarketStats();
   }
 
   Future<void> _fetchChartData() async {
@@ -638,6 +651,92 @@ class _HomePageState extends State<HomePage> {
       });
       print('Chart fetch error: $e');
     }
+  }
+
+  Future<void> _fetchMarketStats() async {
+    setState(() {
+      _isLoadingMarketStats = true;
+    });
+
+    try {
+      // For native TON, we need to use the special address
+      // The API might accept the zero address or we might need a different endpoint
+      final uri = Uri.parse('$_tokensApiUrl/api/v3/jettons/$_tonAddress');
+
+      print('Fetching market stats from: $uri');
+      final response = await http.get(uri);
+
+      print('Market stats API response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Market stats response: $data');
+
+        final marketStats = data['market_stats'] as Map<String, dynamic>?;
+
+        if (marketStats != null) {
+          setState(() {
+            _mcap = (marketStats['mcap'] as num?)?.toDouble();
+            _fdmc = (marketStats['fdmc'] as num?)?.toDouble();
+            _volume24h = (marketStats['volume_usd_24h'] as num?)?.toDouble();
+            _priceChange5m =
+                (marketStats['price_change_5m'] as num?)?.toDouble();
+            _priceChange1h =
+                (marketStats['price_change_1h'] as num?)?.toDouble();
+            _priceChange6h =
+                (marketStats['price_change_6h'] as num?)?.toDouble();
+            _priceChange24h =
+                (marketStats['price_change_24h'] as num?)?.toDouble();
+            _isLoadingMarketStats = false;
+          });
+          print('Market stats loaded successfully');
+        } else {
+          print('No market_stats in response');
+          setState(() {
+            _isLoadingMarketStats = false;
+          });
+        }
+      } else {
+        print('Market stats fetch failed: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        setState(() {
+          _isLoadingMarketStats = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching market stats: $e');
+      setState(() {
+        _isLoadingMarketStats = false;
+      });
+    }
+  }
+
+  // Helper function to format numbers
+  String _formatNumber(num? value, {bool isCurrency = false}) {
+    if (value == null) return '...';
+
+    if (value >= 1000000) {
+      final millions = value / 1000000;
+      return isCurrency
+          ? '\$${millions.toStringAsFixed(1)}M'
+          : '${millions.toStringAsFixed(1)}M';
+    } else if (value >= 1000) {
+      final thousands = value / 1000;
+      return isCurrency
+          ? '\$${thousands.toStringAsFixed(1)}K'
+          : '${thousands.toStringAsFixed(1)}K';
+    } else {
+      return isCurrency
+          ? '\$${value.toStringAsFixed(0)}'
+          : value.toStringAsFixed(0);
+    }
+  }
+
+  // Helper function to format percentage
+  String _formatPercentage(double? value) {
+    if (value == null) return '...';
+    final sign = value >= 0 ? '+' : '';
+    return '$sign${value.toStringAsFixed(2)}%';
   }
 
   Future<void> _fetchSwapAmount() async {
@@ -930,20 +1029,20 @@ class _HomePageState extends State<HomePage> {
                                   Stack(
                                     alignment: Alignment.center,
                                     children: [
-                                      const Row(
+                                      Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text('ton/usdt',
+                                          const Text('ton/usdt',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w300,
                                                 color: Color(0xFF818181),
                                                 fontSize: 20,
                                               )),
-                                          SizedBox.shrink(),
+                                          const SizedBox.shrink(),
                                           Text(
-                                            '+300.70%',
-                                            style: TextStyle(
+                                            '${_formatPercentage(_priceChange24h)} (24H)',
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               color: Color(0xFF818181),
                                               fontSize: 15,
@@ -1058,7 +1157,7 @@ class _HomePageState extends State<HomePage> {
                                     ],
                                   ),
                                   const SizedBox(height: 5),
-                                  const Row(
+                                  Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
                                     children: [
@@ -1066,41 +1165,19 @@ class _HomePageState extends State<HomePage> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          Text(
-                                            'FDV',
+                                          const Text(
+                                            'MCAP',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
                                               color: Color(0xFF818181),
                                               fontSize: 12,
                                             ),
                                           ),
-                                          SizedBox(height: 5),
+                                          const SizedBox(height: 5),
                                           Text(
-                                            '\$3.1K',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'LIQ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          SizedBox(height: 5),
-                                          Text(
-                                            '\$1.1K',
-                                            style: TextStyle(
+                                            _formatNumber(_mcap,
+                                                isCurrency: true),
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               color: Color(0xFF818181),
                                               fontSize: 12,
@@ -1112,7 +1189,31 @@ class _HomePageState extends State<HomePage> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
+                                          const Text(
+                                            'FDMC',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w300,
+                                              color: Color(0xFF818181),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
                                           Text(
+                                            _formatNumber(_fdmc,
+                                                isCurrency: true),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w300,
+                                              color: Color(0xFF818181),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const Text(
                                             'VOL',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
@@ -1120,10 +1221,11 @@ class _HomePageState extends State<HomePage> {
                                               fontSize: 12,
                                             ),
                                           ),
-                                          SizedBox(height: 5),
+                                          const SizedBox(height: 5),
                                           Text(
-                                            '\$3.1K',
-                                            style: TextStyle(
+                                            _formatNumber(_volume24h,
+                                                isCurrency: true),
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               color: Color(0xFF818181),
                                               fontSize: 12,
@@ -1135,41 +1237,18 @@ class _HomePageState extends State<HomePage> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          Text(
-                                            'TXNS',
+                                          const Text(
+                                            '5M',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
                                               color: Color(0xFF818181),
                                               fontSize: 12,
                                             ),
                                           ),
-                                          SizedBox(height: 5),
+                                          const SizedBox(height: 5),
                                           Text(
-                                            '\$7K',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '1 H',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          SizedBox(height: 5),
-                                          Text(
-                                            '+208.13%',
-                                            style: TextStyle(
+                                            _formatPercentage(_priceChange5m),
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               color: Color(0xFF818181),
                                               fontSize: 12,
@@ -1181,18 +1260,41 @@ class _HomePageState extends State<HomePage> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          Text(
-                                            '6 H',
+                                          const Text(
+                                            '1H',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
                                               color: Color(0xFF818181),
                                               fontSize: 12,
                                             ),
                                           ),
-                                          SizedBox(height: 5),
+                                          const SizedBox(height: 5),
                                           Text(
-                                            '+208.13%',
+                                            _formatPercentage(_priceChange1h),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w300,
+                                              color: Color(0xFF818181),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            '6H',
                                             style: TextStyle(
+                                              fontWeight: FontWeight.w300,
+                                              color: Color(0xFF818181),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            _formatPercentage(_priceChange6h),
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               color: Color(0xFF818181),
                                               fontSize: 12,
