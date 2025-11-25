@@ -1,8 +1,10 @@
-metriks
+fix styles
+add wallet screen
 inputs
 token page
 token switch
 rotation
+different screens adaptation
 ton connect
 menu screen layout
 rag

@@ -16,8 +16,8 @@ class DiagonalLinePainter extends CustomPainter {
     if (size.width == 0 || size.height == 0) return;
 
     final paint = Paint()
-      ..color = const Color(0xFFE4E4E4)
-      ..strokeWidth = 2.0
+      ..color = const Color(0xFFFFFFFF)
+      ..strokeWidth = 1.33
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
@@ -1033,10 +1033,11 @@ class _HomePageState extends State<HomePage> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          const Text('ton/usdt',
+                                          const Text('Toncoin',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w300,
-                                                color: Color(0xFF818181),
+                                                color: Color.fromARGB(
+                                                    255, 255, 255, 255),
                                                 fontSize: 20,
                                               )),
                                           const SizedBox.shrink(),
@@ -1044,7 +1045,8 @@ class _HomePageState extends State<HomePage> {
                                             '${_formatPercentage(_priceChange24h)} (24H)',
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
                                               fontSize: 15,
                                             ),
                                           ),
@@ -1071,8 +1073,9 @@ class _HomePageState extends State<HomePage> {
                                                         : FontWeight.w500,
                                                 color: _selectedResolution ==
                                                         _resolutionMap['m']
-                                                    ? const Color(0xFF818181)
-                                                    : const Color(0xFFE4E4E4),
+                                                    ? const Color.fromARGB(
+                                                        255, 255, 255, 255)
+                                                    : const Color(0xFF818181),
                                                 fontSize: 15,
                                               ),
                                             ),
@@ -1096,8 +1099,9 @@ class _HomePageState extends State<HomePage> {
                                                         : FontWeight.w500,
                                                 color: _selectedResolution ==
                                                         _resolutionMap['q']
-                                                    ? const Color(0xFF818181)
-                                                    : const Color(0xFFE4E4E4),
+                                                    ? const Color.fromARGB(
+                                                        255, 255, 255, 255)
+                                                    : const Color(0xFF818181),
                                                 fontSize: 15,
                                               ),
                                             ),
@@ -1121,8 +1125,9 @@ class _HomePageState extends State<HomePage> {
                                                         : FontWeight.w500,
                                                 color: _selectedResolution ==
                                                         _resolutionMap['h']
-                                                    ? const Color(0xFF818181)
-                                                    : const Color(0xFFE4E4E4),
+                                                    ? const Color.fromARGB(
+                                                        255, 255, 255, 255)
+                                                    : const Color(0xFF818181),
                                                 fontSize: 15,
                                               ),
                                             ),
@@ -1146,8 +1151,9 @@ class _HomePageState extends State<HomePage> {
                                                         : FontWeight.w500,
                                                 color: _selectedResolution ==
                                                         _resolutionMap['d']
-                                                    ? const Color(0xFF818181)
-                                                    : const Color(0xFFE4E4E4),
+                                                    ? const Color.fromARGB(
+                                                        255, 255, 255, 255)
+                                                    : const Color(0xFF818181),
                                                 fontSize: 15,
                                               ),
                                             ),
@@ -1156,7 +1162,7 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 5),
+                                  const SizedBox(height: 15),
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
@@ -1169,7 +1175,8 @@ class _HomePageState extends State<HomePage> {
                                             'MCAP',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
                                               fontSize: 12,
                                             ),
                                           ),
@@ -1193,7 +1200,8 @@ class _HomePageState extends State<HomePage> {
                                             'FDMC',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
                                               fontSize: 12,
                                             ),
                                           ),
@@ -1217,7 +1225,8 @@ class _HomePageState extends State<HomePage> {
                                             'VOL',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
                                               fontSize: 12,
                                             ),
                                           ),
@@ -1241,7 +1250,8 @@ class _HomePageState extends State<HomePage> {
                                             '5M',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
                                               fontSize: 12,
                                             ),
                                           ),
@@ -1264,7 +1274,8 @@ class _HomePageState extends State<HomePage> {
                                             '1H',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
                                               fontSize: 12,
                                             ),
                                           ),
@@ -1287,7 +1298,8 @@ class _HomePageState extends State<HomePage> {
                                             '6H',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w300,
-                                              color: Color(0xFF818181),
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
                                               fontSize: 12,
                                             ),
                                           ),
@@ -1304,7 +1316,7 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 5),
+                                  const SizedBox(height: 15),
                                   Expanded(
                                     child: Row(
                                       children: [
@@ -1398,7 +1410,7 @@ class _HomePageState extends State<HomePage> {
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.only(
-                              top: 15, bottom: 0, left: 15, right: 15),
+                              top: 20, bottom: 0, left: 15, right: 15),
                           child: Column(children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1407,7 +1419,7 @@ class _HomePageState extends State<HomePage> {
                                 const Text('Buy',
                                     style: TextStyle(
                                       fontWeight: FontWeight.w300,
-                                      color: Color(0xFF818181),
+                                      color: Color.fromARGB(255, 255, 255, 255),
                                       fontSize: 20,
                                     )),
                                 SizedBox(
@@ -1459,7 +1471,7 @@ class _HomePageState extends State<HomePage> {
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: 20,
-                                      color: Color(0xFFE4E4E4),
+                                      color: Color(0xFFFFFFFF),
                                     )),
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -1473,7 +1485,7 @@ class _HomePageState extends State<HomePage> {
                                     Text(_buyCurrency.toLowerCase(),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w300,
-                                          color: Color(0xFFE4E4E4),
+                                          color: Color(0xFFFFFFFF),
                                           fontSize: 20,
                                         )),
                                     const SizedBox(width: 8),
@@ -1482,7 +1494,7 @@ class _HomePageState extends State<HomePage> {
                                       width: 5,
                                       height: 10,
                                       colorFilter: const ColorFilter.mode(
-                                        Color(0xFFE4E4E4),
+                                        Color(0xFF818181),
                                         BlendMode.srcIn,
                                       ),
                                     ),
@@ -1495,13 +1507,13 @@ class _HomePageState extends State<HomePage> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('now 11 ton on ton',
+                                  Text(r'$1',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 15,
                                         color: Color(0xFF818181),
                                       )),
-                                  Text(r'$1',
+                                  Text('TON',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 15,
@@ -1532,7 +1544,7 @@ class _HomePageState extends State<HomePage> {
                                 const Text('Sell',
                                     style: TextStyle(
                                       fontWeight: FontWeight.w300,
-                                      color: Color(0xFF818181),
+                                      color: Color.fromARGB(255, 255, 255, 255),
                                       fontSize: 20,
                                     )),
                                 SizedBox(
@@ -1592,7 +1604,7 @@ class _HomePageState extends State<HomePage> {
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: 20,
-                                      color: Color(0xFFE4E4E4),
+                                      color: Color(0xFFFFFFFF),
                                     )),
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -1606,7 +1618,7 @@ class _HomePageState extends State<HomePage> {
                                     Text(_sellCurrency.toLowerCase(),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w300,
-                                          color: Color(0xFFE4E4E4),
+                                          color: Color(0xFFFFFFFF),
                                           fontSize: 20,
                                         )),
                                     const SizedBox(width: 8),
@@ -1615,7 +1627,7 @@ class _HomePageState extends State<HomePage> {
                                       width: 5,
                                       height: 10,
                                       colorFilter: const ColorFilter.mode(
-                                        Color(0xFFE4E4E4),
+                                        Color(0xFF818181),
                                         BlendMode.srcIn,
                                       ),
                                     ),
@@ -1628,13 +1640,13 @@ class _HomePageState extends State<HomePage> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('of 300.67 usdt on ton',
+                                  Text(r'$1',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 15,
                                         color: Color(0xFF818181),
                                       )),
-                                  Text(r'$1',
+                                  Text('TON',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 15,
@@ -1643,113 +1655,27 @@ class _HomePageState extends State<HomePage> {
                                 ]),
                           ]),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              top: 15, bottom: 0, left: 15, right: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Container(
+                          margin: const EdgeInsets.only(
+                              bottom: 10, right: 15, left: 15),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/icons/connect.svg',
-                                        width: 20,
-                                        height: 20,
-                                        colorFilter: const ColorFilter.mode(
-                                          Color(0xFFE4E4E4),
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      const SizedBox(
-                                        height: 20,
-                                        child: Center(
-                                          child: Text(
-                                            'Connect',
-                                            style: TextStyle(
-                                              color: Color(0xFFE4E4E4),
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 15),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/icons/create.svg',
-                                        width: 20,
-                                        height: 20,
-                                        colorFilter: const ColorFilter.mode(
-                                          Color(0xFFE4E4E4),
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      const SizedBox(
-                                        height: 20,
-                                        child: Center(
-                                          child: Text(
-                                            'Create',
-                                            style: TextStyle(
-                                              color: Color(0xFFE4E4E4),
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 15),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/icons/import.svg',
-                                        width: 20,
-                                        height: 20,
-                                        colorFilter: const ColorFilter.mode(
-                                          Color(0xFFE4E4E4),
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      const SizedBox(
-                                        height: 20,
-                                        child: Center(
-                                          child: Text(
-                                            'Import',
-                                            style: TextStyle(
-                                              color: Color(0xFFE4E4E4),
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const Center(
+                              Center(
                                 child: Text(
-                                  'wallet',
+                                  'Swap',
                                   style: TextStyle(
-                                    color: Color(0xFF818181),
-                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color.fromARGB(255, 0, 0, 0),
+                                    fontSize: 15,
+                                    height: 20 / 15,
                                   ),
                                 ),
                               ),
@@ -1762,7 +1688,7 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.only(
-                      top: 15, bottom: 30, left: 15, right: 15),
+                      top: 10, bottom: 30, left: 15, right: 15),
                   decoration: const BoxDecoration(
                     color: Colors.black,
                   ),
@@ -1781,7 +1707,7 @@ class _HomePageState extends State<HomePage> {
                                     focusNode: _focusNode,
                                     enabled: true,
                                     readOnly: false,
-                                    cursorColor: const Color(0xFFE4E4E4),
+                                    cursorColor: const Color(0xFFFFFFFF),
                                     cursorHeight: 15,
                                     maxLines: 11,
                                     minLines: 1,
@@ -1791,7 +1717,8 @@ class _HomePageState extends State<HomePage> {
                                         fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                         height: 2.0,
-                                        color: Color(0xFFE4E4E4)),
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255)),
                                     onSubmitted: (value) {
                                       print(
                                           'TextField onSubmitted called with: "$value"'); // Debug
@@ -1807,7 +1734,8 @@ class _HomePageState extends State<HomePage> {
                                           ? null
                                           : 'Ask anything',
                                       hintStyle: const TextStyle(
-                                          color: Color(0xFFE4E4E4),
+                                          color: Color.fromARGB(
+                                              255, 255, 255, 255),
                                           fontFamily: 'Aeroport',
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
@@ -1834,7 +1762,7 @@ class _HomePageState extends State<HomePage> {
                                     focusNode: _focusNode,
                                     enabled: true,
                                     readOnly: false,
-                                    cursorColor: const Color(0xFFE4E4E4),
+                                    cursorColor: const Color(0xFFFFFFFF),
                                     cursorHeight: 15,
                                     maxLines: 11,
                                     minLines: 1,
@@ -1847,7 +1775,7 @@ class _HomePageState extends State<HomePage> {
                                         fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                         height: 2,
-                                        color: Color(0xFFE4E4E4)),
+                                        color: Color(0xFFFFFFFF)),
                                     onSubmitted: (value) {
                                       print(
                                           'TextField onSubmitted called with: "$value"'); // Debug
@@ -1863,7 +1791,7 @@ class _HomePageState extends State<HomePage> {
                                           ? null
                                           : 'Ask anything',
                                       hintStyle: const TextStyle(
-                                          color: Color(0xFFE4E4E4),
+                                          color: Color(0xFFFFFFFF),
                                           fontFamily: 'Aeroport',
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
@@ -1884,15 +1812,18 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const SizedBox(width: 5),
-                      GestureDetector(
-                        onTap: () {
-                          print('Apply button tapped'); // Debug
-                          _navigateToNewPage();
-                        },
-                        child: SvgPicture.asset(
-                          'assets/icons/apply.svg',
-                          width: 30,
-                          height: 30,
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 7.5),
+                        child: GestureDetector(
+                          onTap: () {
+                            print('Apply button tapped'); // Debug
+                            _navigateToNewPage();
+                          },
+                          child: SvgPicture.asset(
+                            'assets/icons/apply.svg',
+                            width: 15,
+                            height: 10,
+                          ),
                         ),
                       ),
                     ],
@@ -2485,7 +2416,8 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                           fontFamily: 'Aeroport',
                                           fontSize: 20,
                                           fontWeight: FontWeight.w400,
-                                          color: Color(0xFFE4E4E4),
+                                          color: Color.fromARGB(
+                                              255, 255, 255, 255),
                                         ),
                                         textAlign: TextAlign.left,
                                       ),
@@ -2512,7 +2444,8 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                                 fontFamily: 'Aeroport',
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w400,
-                                                color: Color(0xFFE4E4E4),
+                                                color: Color.fromARGB(
+                                                    255, 255, 255, 255),
                                               ),
                                               textAlign: TextAlign.left,
                                             );
@@ -2536,7 +2469,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                             fontFamily: 'Aeroport',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w400,
-                                            color: Color(0xFFE4E4E4),
+                                            color: Color(0xFFFFFFFF),
                                           ),
                                           textAlign: TextAlign.left,
                                         )
@@ -2547,7 +2480,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                             fontFamily: 'Aeroport',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w400,
-                                            color: Color(0xFFE4E4E4),
+                                            color: Color(0xFFFFFFFF),
                                           ),
                                         ),
                                       // Add spacing between Q&A pairs (except for the last one in reversed list)
@@ -2600,7 +2533,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                       width: 1.0,
                                       height: indicatorHeight.clamp(
                                           0.0, containerHeight),
-                                      color: const Color(0xFFE4E4E4),
+                                      color: const Color(0xFFFFFFFF),
                                     ),
                                   ),
                                 );
@@ -2633,7 +2566,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                       key: _inputTextFieldKey,
                                       controller: _inputController,
                                       focusNode: _inputFocusNode,
-                                      cursorColor: const Color(0xFFE4E4E4),
+                                      cursorColor: const Color(0xFFFFFFFF),
                                       cursorHeight: 15,
                                       maxLines: 11,
                                       minLines: 1,
@@ -2644,7 +2577,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
                                           height: 2.0,
-                                          color: Color(0xFFE4E4E4)),
+                                          color: Color(0xFFFFFFFF)),
                                       onSubmitted: (value) {
                                         _askNewQuestion();
                                       },
@@ -2655,7 +2588,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                             ? null
                                             : 'Ask anything',
                                         hintStyle: const TextStyle(
-                                            color: Color(0xFFE4E4E4),
+                                            color: Color(0xFFFFFFFF),
                                             fontFamily: 'Aeroport',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w500,
@@ -2680,7 +2613,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                       key: _inputTextFieldKey,
                                       controller: _inputController,
                                       focusNode: _inputFocusNode,
-                                      cursorColor: const Color(0xFFE4E4E4),
+                                      cursorColor: const Color(0xFFFFFFFF),
                                       cursorHeight: 15,
                                       maxLines: 11,
                                       minLines: 1,
@@ -2695,7 +2628,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
                                           height: 2,
-                                          color: Color(0xFFE4E4E4)),
+                                          color: Color(0xFFFFFFFF)),
                                       onSubmitted: (value) {
                                         _askNewQuestion();
                                       },
@@ -2706,7 +2639,7 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                                             ? null
                                             : 'Ask anything',
                                         hintStyle: const TextStyle(
-                                            color: Color(0xFFE4E4E4),
+                                            color: Color(0xFFFFFFFF),
                                             fontFamily: 'Aeroport',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w500,
@@ -2734,10 +2667,10 @@ class _NewPageState extends State<NewPage> with TickerProviderStateMixin {
                           },
                           child: SvgPicture.asset(
                             'assets/icons/apply.svg',
-                            width: 30,
-                            height: 30,
+                            width: 15,
+                            height: 10,
                             colorFilter: const ColorFilter.mode(
-                              Color(0xFFE4E4E4),
+                              Color.fromARGB(255, 255, 255, 255),
                               BlendMode.srcIn,
                             ),
                           ),
