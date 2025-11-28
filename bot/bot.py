@@ -117,8 +117,9 @@ async def ensure_user_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Create inline keyboard with button
+    app_url = os.getenv('APP_URL')
     keyboard = [
-        [InlineKeyboardButton("Run app", url="https://t.me/xp7kbot/app?mode=fullscreen")]
+        [InlineKeyboardButton("Run app", url=f"{app_url}?mode=fullscreen")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -130,7 +131,7 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def stream_ai_response(message_text: str, bot, chat_id: int, message_id: int):
     """Stream AI response and edit message as chunks arrive"""
-    ai_backend_url = os.getenv('AI_BACKEND_URL', 'https://xp7k-production.up.railway.app')
+    ai_backend_url = os.getenv('AI_BACKEND_URL')
     api_key = os.getenv('API_KEY')
     if not api_key:
         raise ValueError("API_KEY environment variable must be set")
@@ -277,11 +278,11 @@ async def shutdown():
 
 
 def main():
-    token = os.getenv('token')
-    if not token:
-        raise ValueError("Environment variable 'token' is not set")
+    bot_token = os.getenv('BOT_TOKEN')
+    if not bot_token:
+        raise ValueError("Environment variable 'BOT_TOKEN' is not set")
     
-    app = ApplicationBuilder().token(token).post_init(post_init).post_shutdown(shutdown).build()
+    app = ApplicationBuilder().token(bot_token).post_init(post_init).post_shutdown(shutdown).build()
     
     # Add handler to ensure user exists in DB on every message (non-blocking)
     # This runs first, before command handlers

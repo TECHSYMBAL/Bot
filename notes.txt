@@ -1,6 +1,8 @@
+dyor retries
+chart pointing
+test local envs
+swap.coffee retries
 flashing on apply
-local envs
-loading and updating issues
 round to 4 digits
 charts errors
 add wallet screen
