@@ -1,4 +1,4 @@
-# bot
+# Fuck it
 
 This is a monorepo containing multiple services.
 
