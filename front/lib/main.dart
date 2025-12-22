@@ -5,8 +5,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:js' as js;
+import 'dart:async';
 import 'analytics.dart';
 import 'telegram_safe_area.dart';
+import 'telegram_webapp.dart';
 
 // Theme helper class
 class AppTheme {
@@ -190,111 +192,428 @@ class DiagonalLinePainter extends CustomPainter {
 }
 
 // Helper class for Telegram WebApp BackButton
+// Uses raw Telegram WebApp API following event-based pattern:
+// - postEvent('web_app_setup_back_button') to show/hide
+// - onEvent('back_button_pressed') to listen to clicks
 class TelegramBackButton {
   // Store callback references so offClick can properly remove them
   static final Map<Function(), dynamic> _callbackMap = {};
+  
+  // Log collector for displaying logs on screen
+  static final List<String> _logs = [];
+  static final _logController = StreamController<String>.broadcast();
+  
+  /// Stream of log messages
+  static Stream<String> get logStream => _logController.stream;
+  
+  /// Get recent logs
+  static List<String> get recentLogs => List.unmodifiable(_logs);
+  
+  /// Add a log message (both to console and log list)
+  static void addLog(String message) {
+    _addLog(message);
+  }
+  
+  static void _addLog(String message) {
+    print(message); // Also print to console
+    final timestamp = DateTime.now().toString().substring(11, 19);
+    final logMessage = '[$timestamp] $message';
+    _logs.add(logMessage);
+    if (_logs.length > 50) {
+      _logs.removeAt(0); // Keep only last 50 logs
+    }
+    _logController.add(logMessage);
+  }
 
-  static js.JsObject? _getBackButton() {
+  /// Get the WebApp instance
+  static js.JsObject? _getWebApp() {
     try {
       final telegram = js.context['Telegram'];
-      if (telegram == null) return null;
+      if (telegram == null) {
+        _addLog('[BackButton] Telegram object not found');
+        return null;
+      }
       final webApp = telegram['WebApp'];
-      if (webApp == null) return null;
-      final backButton = webApp['BackButton'];
-      return backButton as js.JsObject?;
+      if (webApp == null) {
+        _addLog('[BackButton] WebApp object not found');
+        return null;
+      }
+      if (webApp is! js.JsObject) {
+        _addLog('[BackButton] WebApp is not a JsObject: ${webApp.runtimeType}');
+        return null;
+      }
+      return webApp;
     } catch (e) {
+      _addLog('[BackButton] Error getting WebApp: $e');
       return null;
     }
   }
 
-  static void show() {
-    final backButton = _getBackButton();
-    if (backButton != null) {
-      try {
-        final show = backButton['show'];
-        if (show != null) {
-          show.apply([]);
-        }
-      } catch (e) {
-        // Silent fail
-      }
-    }
-  }
-
-  static void hide() {
-    final backButton = _getBackButton();
-    if (backButton != null) {
-      try {
-        final hide = backButton['hide'];
-        if (hide != null) {
-          hide.apply([]);
-        }
-      } catch (e) {
-        // Silent fail
-      }
-    }
-  }
-
-  static void onClick(Function() callback) {
+  /// Get the BackButton object from WebApp
+  static js.JsObject? _getBackButton() {
     try {
-      // First try using BackButton.onClick directly (recommended approach)
+      final webApp = _getWebApp();
+      if (webApp == null) return null;
+
+      final backButton = webApp['BackButton'];
+      if (backButton == null) {
+        _addLog('[BackButton] BackButton object not found');
+        return null;
+      }
+      if (backButton is! js.JsObject) {
+        _addLog('[BackButton] BackButton is not a JsObject: ${backButton.runtimeType}');
+        return null;
+      }
+      return backButton;
+    } catch (e) {
+      _addLog('[BackButton] Error getting BackButton: $e');
+      return null;
+    }
+  }
+
+  /// Setup a debug listener to catch all events (for troubleshooting)
+  /// Also sets up window message listener to catch events from Telegram
+  static void setupDebugEventListener() {
+    try {
+      final webApp = _getWebApp();
+      if (webApp == null) {
+        _addLog('[BackButton] Debug: WebApp not found for event listener');
+        return;
+      }
+
+      final onEvent = webApp['onEvent'];
+      if (onEvent != null && onEvent is js.JsFunction) {
+        // Listen to back button events specifically
+        final debugCallback = js.allowInterop((dynamic eventData) {
+          _addLog('[BackButton] 🔍 DEBUG: Event callback triggered! Event data: $eventData');
+        });
+
+        // Try listening to the back_button_pressed event
+        try {
+          onEvent.apply(['back_button_pressed', debugCallback]);
+          _addLog('[BackButton] Debug: Registered listener for "back_button_pressed"');
+        } catch (e) {
+          _addLog('[BackButton] Debug: Failed to register "back_button_pressed": $e');
+        }
+        
+        // Also try backButtonClicked
+        try {
+          onEvent.apply(['backButtonClicked', debugCallback]);
+          _addLog('[BackButton] Debug: Registered listener for "backButtonClicked"');
+        } catch (e) {
+          _addLog('[BackButton] Debug: Failed to register "backButtonClicked": $e');
+        }
+      }
+      
+      // Window message listener removed temporarily to debug page loading
+    } catch (e) {
+      _addLog('[BackButton] Debug: Error setting up debug listener: $e');
+    }
+  }
+
+  /// Show the back button
+  /// First tries BackButton.show(), then falls back to postEvent
+  static void show() {
+    try {
+      final webApp = _getWebApp();
+      if (webApp == null) {
+        _addLog('[BackButton] WebApp not found');
+        return;
+      }
+
+      // Method 1: Try using BackButton.show() directly (primary method)
       final backButton = _getBackButton();
       if (backButton != null) {
-        final onClickMethod = backButton['onClick'];
-        if (onClickMethod != null) {
-          final jsCallback = js.allowInterop((dynamic _) {
-            callback();
-          });
-          _callbackMap[callback] = jsCallback;
+        final showMethod = backButton['show'];
+        if (showMethod != null && showMethod is js.JsFunction) {
           try {
-            onClickMethod.apply([jsCallback]);
+            showMethod.apply([]);
+            _addLog('[BackButton] ✓ Show command sent via BackButton.show()');
             return;
           } catch (e) {
-            // Fall through to WebApp.onEvent
+            _addLog('[BackButton] BackButton.show() failed: $e');
+            // Fall through to postEvent
           }
         }
       }
 
-      // Fallback to WebApp.onEvent
-      final telegram = js.context['Telegram'];
-      if (telegram == null) return;
-      final webApp = telegram['WebApp'];
-      if (webApp == null) return;
-
-      if (webApp.hasProperty('onEvent')) {
-        final onEvent = webApp['onEvent'];
-        if (onEvent != null) {
-          final jsCallback = js.allowInterop((dynamic _) {
-            callback();
-          });
-          _callbackMap[callback] = jsCallback;
-          onEvent.apply(['backButtonClicked', jsCallback]);
+      // Method 2: Fallback to postEvent
+      final postEvent = webApp['postEvent'];
+      if (postEvent != null && postEvent is js.JsFunction) {
+        try {
+          postEvent.apply([
+            'web_app_setup_back_button',
+            js.JsObject.jsify({'is_visible': true})
+          ]);
+          _addLog('[BackButton] ✓ Show command sent via postEvent (fallback)');
+          return;
+        } catch (e) {
+          _addLog('[BackButton] postEvent failed: $e');
         }
       }
+
+      _addLog('[BackButton] ✗ Could not show back button - no methods available');
     } catch (e) {
-      print('Error setting up back button onClick: $e');
+      _addLog('[BackButton] Error showing back button: $e');
     }
   }
 
-  static void offClick(Function() callback) {
+  /// Hide the back button
+  /// First tries BackButton.hide(), then falls back to postEvent
+  static void hide() {
     try {
-      final telegram = js.context['Telegram'];
-      if (telegram == null) return;
-      final webApp = telegram['WebApp'];
-      if (webApp == null) return;
+      final webApp = _getWebApp();
+      if (webApp == null) {
+        _addLog('[BackButton] WebApp not found');
+        return;
+      }
 
-      final jsCallback = _callbackMap[callback];
-      if (jsCallback == null) return;
-
-      if (webApp.hasProperty('offEvent')) {
-        final offEvent = webApp['offEvent'];
-        if (offEvent != null) {
-          offEvent.apply(['backButtonClicked', jsCallback]);
-          _callbackMap.remove(callback);
+      // Method 1: Try using BackButton.hide() directly (primary method)
+      final backButton = _getBackButton();
+      if (backButton != null) {
+        final hideMethod = backButton['hide'];
+        if (hideMethod != null && hideMethod is js.JsFunction) {
+          try {
+            hideMethod.apply([]);
+            _addLog('[BackButton] ✓ Hide command sent via BackButton.hide()');
+            return;
+          } catch (e) {
+            _addLog('[BackButton] BackButton.hide() failed: $e');
+            // Fall through to postEvent
+          }
         }
       }
+
+      // Method 2: Fallback to postEvent
+      final postEvent = webApp['postEvent'];
+      if (postEvent != null && postEvent is js.JsFunction) {
+        try {
+          postEvent.apply([
+            'web_app_setup_back_button',
+            js.JsObject.jsify({'is_visible': false})
+          ]);
+          _addLog('[BackButton] ✓ Hide command sent via postEvent (fallback)');
+          return;
+        } catch (e) {
+          _addLog('[BackButton] postEvent failed: $e');
+        }
+      }
+
+      _addLog('[BackButton] ✗ Could not hide back button - no methods available');
     } catch (e) {
-      print('Error removing back button onClick: $e');
+      _addLog('[BackButton] Error hiding back button: $e');
+    }
+  }
+
+  /// Register a callback for back button clicks
+  /// Primary method: BackButton.onClick() (direct Telegram API)
+  /// Fallback: onEvent('back_button_pressed') or onEvent('backButtonClicked')
+  static void onClick(Function() callback) {
+    try {
+      // Remove any existing callback for this function to avoid duplicates
+      if (_callbackMap.containsKey(callback)) {
+        offClick(callback);
+      }
+
+      // Create the JavaScript callback that wraps the Dart callback
+      // This will be called by Telegram when the built-in TMA back button is clicked
+      final jsCallback = js.allowInterop((dynamic event) {
+        // This log should appear when Telegram calls our callback
+        _addLog('[BackButton] 🔔🔔🔔 CALLBACK FIRED BY TELEGRAM! Event: $event');
+        _addLog('[BackButton] TMA back button was clicked - executing handler...');
+        try {
+          callback();
+          _addLog('[BackButton] ✓ Handler executed successfully');
+        } catch (e, stackTrace) {
+          _addLog('[BackButton] ✗ Error in handler: $e');
+          _addLog('[BackButton] Stack: $stackTrace');
+        }
+      });
+      
+      _addLog('[BackButton] Created JavaScript callback wrapper for TMA button');
+      
+      // NOTE: Window message listener removed temporarily to debug page loading issue
+      // Will re-enable once we confirm the page loads correctly
+
+      final webApp = _getWebApp();
+      if (webApp == null) {
+        _addLog('[BackButton] WebApp not found - cannot register onClick');
+        return;
+      }
+
+      // Method 1: Try using BackButton.onClick() directly (PRIMARY - Telegram API)
+      // This is the correct method for TMA built-in back button
+      final backButton = _getBackButton();
+      if (backButton != null) {
+        final onClickMethod = backButton['onClick'];
+        
+        if (onClickMethod != null && onClickMethod is js.JsFunction) {
+          try {
+            _addLog('[BackButton] Registering handler via BackButton.onClick() (TMA built-in button)...');
+            
+            // Store callback globally to prevent garbage collection
+            // Store it on window object so JavaScript keeps the reference
+            try {
+              final window = js.context['window'];
+              if (window != null) {
+                final callbackId = 'telegram_back_button_callback_${DateTime.now().millisecondsSinceEpoch}';
+                window[callbackId] = jsCallback;
+                _addLog('[BackButton] Stored callback globally as: $callbackId');
+              }
+            } catch (e) {
+              _addLog('[BackButton] Could not store callback globally: $e');
+            }
+            
+            // IMPORTANT: For TMA built-in buttons, onClick() must be called directly
+            // The callback will be triggered by Telegram when user clicks the button
+            _addLog('[BackButton] Calling BackButton.onClick() with callback...');
+            onClickMethod.apply([jsCallback]);
+            
+            // Store the callback mapping (for offClick to work)
+            _callbackMap[callback] = jsCallback;
+            
+            _addLog('[BackButton] ✓ Handler registered via BackButton.onClick()');
+            _addLog('[BackButton] Callback stored in map (size: ${_callbackMap.length})');
+            
+            // Verify registration by checking if callback is still accessible
+            try {
+              final verifyCallback = backButton['onClick'];
+              if (verifyCallback != null) {
+                _addLog('[BackButton] Verification: onClick method still exists after registration');
+              }
+            } catch (e) {
+              _addLog('[BackButton] Could not verify registration: $e');
+            }
+            
+            // Test: Try to see if we can access the registered callback
+            // Note: Telegram doesn't expose the registered callback, so we can't verify it this way
+            // But we can test if our callback works
+            _addLog('[BackButton] Testing callback directly...');
+            try {
+              // Call the callback directly to verify it works
+              jsCallback(null);
+              _addLog('[BackButton] ✓ Direct callback test: SUCCESS');
+            } catch (e) {
+              _addLog('[BackButton] ✗ Direct callback test failed: $e');
+            }
+            
+            // Verify button state (it should be invisible until we call show())
+            try {
+              final isVisible = backButton['isVisible'];
+              _addLog('[BackButton] Button visibility state: $isVisible (will be visible after show())');
+            } catch (e) {
+              // isVisible might not be readable, that's ok
+            }
+            
+            return;
+          } catch (e, stackTrace) {
+            _addLog('[BackButton] ✗ BackButton.onClick() registration failed: $e');
+            _addLog('[BackButton] Error details: $stackTrace');
+            // Fall through to onEvent methods
+          }
+        } else {
+          _addLog('[BackButton] ✗ BackButton.onClick is not available');
+          _addLog('[BackButton] onClick type: ${onClickMethod?.runtimeType ?? "null"}');
+          if (onClickMethod != null) {
+            _addLog('[BackButton] onClick value: $onClickMethod');
+          }
+        }
+      } else {
+        _addLog('[BackButton] ✗ BackButton object not found');
+      }
+
+      // Method 2: Fallback to onEvent('backButtonClicked') 
+      // Note: Telegram uses 'backButtonClicked' event name (camelCase)
+      final onEvent = webApp['onEvent'];
+      if (onEvent != null && onEvent is js.JsFunction) {
+        try {
+          _addLog('[BackButton] Trying fallback: onEvent("backButtonClicked")...');
+          onEvent.apply(['backButtonClicked', jsCallback]);
+          _callbackMap[callback] = jsCallback;
+          _addLog('[BackButton] ✓ Handler registered via onEvent("backButtonClicked") (fallback)');
+          return;
+        } catch (e) {
+          _addLog('[BackButton] onEvent("backButtonClicked") failed: $e');
+        }
+      }
+
+      // Method 3: Last resort - try onEvent('back_button_pressed')
+      if (onEvent != null && onEvent is js.JsFunction) {
+        try {
+          _addLog('[BackButton] Trying last resort: onEvent("back_button_pressed")...');
+          onEvent.apply(['back_button_pressed', jsCallback]);
+          _callbackMap[callback] = jsCallback;
+          _addLog('[BackButton] ✓ Handler registered via onEvent("back_button_pressed") (last resort)');
+          return;
+        } catch (e) {
+          _addLog('[BackButton] onEvent("back_button_pressed") failed: $e');
+        }
+      }
+
+      _addLog('[BackButton] ✗ Could not register onClick - all methods failed');
+    } catch (e, stackTrace) {
+      _addLog('[BackButton] ✗ Error setting up onClick: $e');
+      _addLog('[BackButton] Stack trace: $stackTrace');
+    }
+  }
+
+  /// Remove a callback for back button clicks
+  /// Tries BackButton.offClick() first, then offEvent methods
+  static void offClick(Function() callback) {
+    try {
+      final jsCallback = _callbackMap[callback];
+      if (jsCallback == null) {
+        _addLog('[BackButton] No callback found to remove');
+        return;
+      }
+
+      final webApp = _getWebApp();
+      if (webApp == null) {
+        _addLog('[BackButton] WebApp not found - cannot remove onClick');
+        return;
+      }
+
+      // Method 1: Try using BackButton.offClick() directly (PRIMARY)
+      final backButton = _getBackButton();
+      if (backButton != null) {
+        final offClickMethod = backButton['offClick'];
+        if (offClickMethod != null && offClickMethod is js.JsFunction) {
+          try {
+            offClickMethod.apply([jsCallback]);
+            _callbackMap.remove(callback);
+            _addLog('[BackButton] ✓ onClick handler removed via BackButton.offClick()');
+            return;
+          } catch (e) {
+            _addLog('[BackButton] BackButton.offClick() failed: $e');
+            // Fall through to offEvent
+          }
+        }
+      }
+
+      // Method 2: Fallback to offEvent
+      final offEvent = webApp['offEvent'];
+      if (offEvent != null && offEvent is js.JsFunction) {
+        try {
+          offEvent.apply(['back_button_pressed', jsCallback]);
+          _callbackMap.remove(callback);
+          _addLog('[BackButton] ✓ onClick handler removed via offEvent("back_button_pressed")');
+          return;
+        } catch (e) {
+          // Try other event name
+          try {
+            offEvent.apply(['backButtonClicked', jsCallback]);
+            _callbackMap.remove(callback);
+            _addLog('[BackButton] ✓ onClick handler removed via offEvent("backButtonClicked")');
+            return;
+          } catch (e2) {
+            _addLog('[BackButton] offEvent failed for both event names: $e, $e2');
+          }
+        }
+      }
+
+      _addLog('[BackButton] ✗ Could not remove onClick - all methods failed');
+    } catch (e) {
+      _addLog('[BackButton] Error removing onClick: $e');
     }
   }
 }
@@ -307,6 +626,11 @@ void main() async {
   } catch (e) {
     print('No .env file found (this is OK for production): $e');
   }
+
+  // Initialize Telegram WebApp
+  final telegramWebApp = TelegramWebApp();
+  await telegramWebApp.initialize();
+
   runApp(const MyApp());
 }
 
@@ -326,6 +650,9 @@ class _MyAppState extends State<MyApp> {
       VercelAnalytics.init();
       // Track initial page view
       VercelAnalytics.trackPageView(path: '/', title: 'Home');
+      
+      // Ensure Telegram WebApp is initialized after first frame
+      TelegramWebApp().initialize();
     });
   }
 
@@ -4839,20 +5166,86 @@ class _TradePageState extends State<TradePage> {
   void _handleBackButton() {
     Navigator.of(context).pop();
   }
+  
+  List<String> _logs = [];
+  StreamSubscription<String>? _logSubscription;
 
   @override
   void initState() {
     super.initState();
-    // Show back button when swap page loads
+    
+    // Subscribe to log stream
+    _logSubscription = TelegramBackButton.logStream.listen((log) {
+      if (mounted) {
+        setState(() {
+          _logs.add(log);
+          // Keep only last 30 logs
+          if (_logs.length > 30) {
+            _logs.removeAt(0);
+          }
+        });
+      }
+    });
+    
+    // Load existing logs
+    _logs = List.from(TelegramBackButton.recentLogs);
+    
+    // Set up back button when swap page loads
+    // Since the back button is a TMA built-in (outside app layout), we need to:
+    // 1. Register the handler FIRST
+    // 2. Then show the button
+    // 3. Ensure WebApp is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      TelegramBackButton.show();
-      // Set up back button click handler to return to main page
-      TelegramBackButton.onClick(_handleBackButton);
+      try {
+        TelegramBackButton.addLog('TradePage: Setting up TMA built-in back button...');
+        
+        // Setup debug event listener to catch all events
+        try {
+          TelegramBackButton.setupDebugEventListener();
+        } catch (e) {
+          TelegramBackButton.addLog('TradePage: Error in setupDebugEventListener: $e');
+        }
+        
+        // CRITICAL: Register onClick handler BEFORE showing the button
+        // For TMA built-in buttons, the handler MUST be registered before show()
+        TelegramBackButton.addLog('TradePage: Registering onClick handler...');
+        try {
+          TelegramBackButton.onClick(_handleBackButton);
+        } catch (e, stackTrace) {
+          TelegramBackButton.addLog('TradePage: Error in onClick registration: $e');
+          TelegramBackButton.addLog('TradePage: Stack: $stackTrace');
+        }
+        
+        // Give a moment for handler registration to complete
+        // Then show the button (TMA will render it outside our app layout)
+        Future.delayed(const Duration(milliseconds: 200), () {
+          try {
+            TelegramBackButton.addLog('TradePage: Showing back button...');
+            TelegramBackButton.show();
+            TelegramBackButton.addLog('TradePage: Back button setup complete');
+            
+            // Verify setup after a delay
+            Future.delayed(const Duration(milliseconds: 500), () {
+              try {
+                TelegramBackButton.addLog('TradePage: Verification complete - button should be visible in TMA header');
+              } catch (e) {
+                // Ignore
+              }
+            });
+          } catch (e) {
+            TelegramBackButton.addLog('TradePage: Error showing button: $e');
+          }
+        });
+      } catch (e, stackTrace) {
+        TelegramBackButton.addLog('TradePage: CRITICAL ERROR in initState: $e');
+        TelegramBackButton.addLog('TradePage: Stack trace: $stackTrace');
+      }
     });
   }
-
+  
   @override
   void dispose() {
+    _logSubscription?.cancel();
     // Remove back button click handler when page is disposed
     TelegramBackButton.offClick(_handleBackButton);
     // Hide back button when leaving swap page
@@ -4864,7 +5257,74 @@ class _TradePageState extends State<TradePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      body: Container(),
+      body: Container(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Back Button Debug Logs',
+              style: TextStyle(
+                color: AppTheme.textColor,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Aeroport',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: AppTheme.isLightTheme 
+                      ? Colors.grey[200] 
+                      : Colors.grey[900],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppTheme.textColor.withOpacity(0.3),
+                  ),
+                ),
+                child: _logs.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No logs yet...',
+                          style: TextStyle(
+                            color: AppTheme.textColor.withOpacity(0.5),
+                            fontFamily: 'Aeroport',
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: _logs.length,
+                        itemBuilder: (context, index) {
+                          final log = _logs[index];
+                          final isError = log.contains('✗') || log.contains('Error');
+                          final isSuccess = log.contains('✓');
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 4.0),
+                            child: Text(
+                              log,
+                              style: TextStyle(
+                                color: isError
+                                    ? Colors.red
+                                    : isSuccess
+                                        ? Colors.green
+                                        : AppTheme.textColor,
+                                fontSize: 11,
+                                fontFamily: 'Aeroport',
+                                fontFeatures: [
+                                  const FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
