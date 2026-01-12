@@ -20,8 +20,8 @@ app.add_middleware(
 
 # Ollama API URL - defaults to localhost, can be overridden with env var
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
-# Using tinyllama as default - smaller model that works on Railway free tier
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "tinyllama")
+# Using llama3.2:3b as default - multilingual model optimized for 8GB RAM
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
 
 # API Key for authentication - must be set in environment variables
 API_KEY = os.getenv("API_KEY")

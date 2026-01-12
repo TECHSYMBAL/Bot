@@ -24,12 +24,12 @@ if [ "$OLLAMA_READY" = false ]; then
 fi
 
 # Check if model exists, if not pull it in background (don't block startup)
-# Using tinyllama as default - much smaller and works on Railway free tier
-MODEL=${OLLAMA_MODEL:-tinyllama}
+# Using llama3.2:3b as default - multilingual model optimized for 8GB RAM
+MODEL=${OLLAMA_MODEL:-llama3.2:3b}
 echo "Checking for model: $MODEL"
 if command -v ollama > /dev/null 2>&1; then
     if ! ollama list 2>/dev/null | grep -q "$MODEL"; then
-        echo "Model $MODEL not found. Will pull in background (this may take a while, 2-7GB download)..."
+        echo "Model $MODEL not found. Will pull in background (this may take a while, ~2GB download)..."
         # Pull model in background so it doesn't block FastAPI startup
         (ollama pull $MODEL && echo "Model $MODEL pulled successfully!") || {
             echo "Warning: Failed to pull model. Chat requests will fail until model is available."
